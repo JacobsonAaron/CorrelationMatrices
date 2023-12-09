@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-class Utils():
+class utils():
 
     def _embed(data, method, dimension = 2):
         raise NotImplementedError
@@ -14,10 +14,41 @@ class Utils():
         raise NotImplementedError
 
     def loadPairwiseDistances(filename):
-        raise NotImplementedError
+        print("Attempting to load pairwise distances from file.")
+        pairwiseDists = np.loadtxt(filename)
+        print("Successfully loaded pairwise distances from file.")
+        return pairwiseDists
+
+    def makeEmptyPairwiseDists(numArrays):
+        return np.zeros((numArrays, numArrays), dtype=float)
 
     def calculatePairwiseDistances(Cmats, distFunc, Cmats_half=None, Cmats_neghalf=None):
-        raise NotImplementedError
+        # TODO: Make this save progress? Update global variable, or maybe cache parially completed portions?
+        # TODO: Implement GPU backend using pytorch (about )
+        numArrays = len(Cmats)
+        pairwiseDists = utils.makeEmptyPairwiseDists(numArrays)
+        
+        j=0
+        for i in range(numArrays):
+            if i%10 == 0:
+                print("i =", i, "/", numArrays, "|", "j =", j, "/", numArrays, "          ", end="\r")
+            A = Cmats[i]
+            if Cmats_half is not None:
+                Ahalf = Cmats_half[i]
+            else:
+                Ahalf = None
+            if Cmats_neghalf is not None:
+                A_neghalf = Cmats_neghalf[i]
+            else:
+                A_neghalf = None
+            for j in range(0,numArrays):
+                if j%30 == 0:
+                    print("i =", i, "/", numArrays, "|", "j =", j, "/", numArrays, "          ", end="\r")
+                B = Cmats[j]
+                dist = distFunc(A, B, Ahalf, A_neghalf)
+                pairwiseDists[i,j] = dist
+                
+        return pairwiseDists
 
     def TStoCM(timeseries: np.array) -> np.array:
         """Accepts a numpy array containing timeseries data and returns a correlation matrix. Note that numpy's corrcoef() method calculates Pearson's coefficient. 
@@ -70,6 +101,6 @@ class Utils():
 
     def rawTStoClippedCMat(timeseries: np.array, rowsToKeep: int = 90, sampleRate: float = .5, leadingClip: float = 30.0, durationToKeep: float = 300.0, keepAll: bool = False) -> np.array:
         if keepAll: 
-            return Utils.TStoCM(timeseries)
+            return utils.TStoCM(timeseries)
         else: 
-            return Utils.TStoCM(Utils.clipTS(timeseries[:rowsToKeep, :], sampleRate, leadingClip, durationToKeep))
+            return utils.TStoCM(utils.clipTS(timeseries[:rowsToKeep, :], sampleRate, leadingClip, durationToKeep))

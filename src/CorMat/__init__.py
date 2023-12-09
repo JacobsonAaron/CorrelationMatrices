@@ -1,15 +1,15 @@
-__all__ = ["__version__", "Distances", "Plots", "Colors", "Utils", "TEST"] # What gets imported when using from _____ import *
+__all__ = ["__version__", "distances", "plots", "colors", "utils", "gpu"] # What gets imported when using from _____ import *
+# TODO: Fix the __version__ attribute. Not sure what is wrong with it
 
 import os
 
-import numpy as np
-
 # Use if files have classes inside; this imports as Object (from within files)
 # Allows access as CorMat.plots.Plots or as CorMat.Plots
-from .distances import Distances
-from .plots import Plots
-from .colors import Colors
-from .utils import Utils
+from .distances import distances
+from .plots import plots
+from .colors import colors
+from .utils import utils
+from CorMat import gpu
 
 ## This imports files as filename.Object
 # from CorMat import distances, plots, colors, utils, testModule
