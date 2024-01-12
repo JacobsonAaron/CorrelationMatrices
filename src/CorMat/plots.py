@@ -6,7 +6,7 @@ import matplotlib.patheffects as pe
 import numpy as np
 
 
-class Plots():
+class plots():
     pass
 
 
