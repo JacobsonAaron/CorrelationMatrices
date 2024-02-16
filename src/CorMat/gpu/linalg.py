@@ -16,3 +16,7 @@ class linalg():
             return torch.matmul(evecs, torch.matmul (torch.diag(evpow), torch.inverse(evecs)))
         else:
             raise TypeError(f"Unsupported type found in fractional_mat_power: {type(A)}")
+        
+    def matrixLog(mat):
+        # TODO: implement this
+        raise NotImplementedError
