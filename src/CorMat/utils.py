@@ -1,5 +1,7 @@
 import os
 import numpy as np
+from scipy import linalg as la
+from typing import Callable, Iterable
 
 class utils():
 
@@ -22,32 +24,34 @@ class utils():
     def makeEmptyPairwiseDists(numArrays):
         return np.zeros((numArrays, numArrays), dtype=float)
 
-    def calculatePairwiseDistances(Cmats, distFunc, Cmats_half=None, Cmats_neghalf=None):
-        # TODO: Make this save progress? Update global variable, or maybe cache parially completed portions?
-        # TODO: Implement GPU backend using pytorch (about )
-        numArrays = len(Cmats)
-        pairwiseDists = utils.makeEmptyPairwiseDists(numArrays)
+    def calculatePairwiseDistances(Matrices: Iterable, distance: Callable, Mats_half: Iterable = None, Mats_neghalf: Iterable = None, 
+                            computeHalves: bool = False, computeNeghalves: bool = False, 
+                            assumeSymmetric: bool = False, silent: bool = False):
+        """Calculates a matrix of pairwise distances between objects in an iterable."""
+        # TODO: Allow this to resume progress if interrupted?
+        if Mats_half is None and computeHalves == True:
+            Mats_half = [la.fractional_matrix_power(mat, 1/2) for mat in Matrices]
+        if Mats_neghalf is None and computeNeghalves == True:
+            Mats_neghalf = [np.linalg.inv(mat) for mat in Mats_half]
         
+        numArrays = len(Matrices)
+        pairwiseDists = np.zeros((numArrays, numArrays), dtype=float)
         j=0
         for i in range(numArrays):
-            if i%10 == 0:
-                print("i =", i, "/", numArrays, "|", "j =", j, "/", numArrays, "          ", end="\r")
-            A = Cmats[i]
-            if Cmats_half is not None:
-                Ahalf = Cmats_half[i]
-            else:
-                Ahalf = None
-            if Cmats_neghalf is not None:
-                A_neghalf = Cmats_neghalf[i]
-            else:
-                A_neghalf = None
-            for j in range(0,numArrays):
-                if j%30 == 0:
-                    print("i =", i, "/", numArrays, "|", "j =", j, "/", numArrays, "          ", end="\r")
-                B = Cmats[j]
-                dist = distFunc(A, B, Ahalf, A_neghalf)
+            innerLoopUpperIdx = i+1 if assumeSymmetric else numArrays
+            if i%10 == 0 and not silent:
+                print("i =", i, "/", numArrays, "|", "j =", j, "          ", end="\r")
+            A = Matrices[i]
+            Ahalf = Mats_half[i] if Mats_half is not None else None
+            A_neghalf = Mats_neghalf[i] if Mats_neghalf is not None else None
+            for j in range(0,innerLoopUpperIdx):
+                if j%30 == 0 and not silent:
+                    print("i =", i, "/", numArrays, "|", "j =", j, "          ", end="\r")
+                B = Matrices[j]
+                dist = distance(A, B, Ahalf, A_neghalf)
                 pairwiseDists[i,j] = dist
-                
+                if assumeSymmetric:
+                    pairwiseDists[j,i] = dist
         return pairwiseDists
 
     def TStoCM(timeseries: np.array) -> np.array:
@@ -99,7 +103,7 @@ class utils():
     def extractCortexMAT(matrix: np.array, rowsToKeep: int = 90) -> np.array:
         return matrix[:rowsToKeep, :rowsToKeep]
 
-    def rawTStoClippedCMat(timeseries: np.array, rowsToKeep: int = 90, sampleRate: float = .5, leadingClip: float = 30.0, durationToKeep: float = 300.0, keepAll: bool = False) -> np.array:
+    def rawTStoClippedCMat(timeseries: np.array, rowsToKeep: int = 90, sampleRate: float = .5, leadingClip: float = 30.0, durationToKeep: float = 300.0, keepAll: bool = True) -> np.array:
         if keepAll: 
             return utils.TStoCM(timeseries)
         else: 

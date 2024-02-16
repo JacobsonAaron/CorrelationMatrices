@@ -7,8 +7,6 @@ import numpy as np
 
 
 class plots():
-    pass
-
 
     def image(ax,arr,xy,zoom,cmap=None):
         """ Place an image (arr) as annotation at position xy """
@@ -19,7 +17,6 @@ class plots():
                             boxcoords="offset points",
                             pad=0.3, arrowprops=dict(arrowstyle="->"))
         ax.add_artist(ab)
-        
 
     def outlineAnnotate(ax, text, location, inColor="black", outColor="white", linewidth=1, size=10):
         # Note: [0,0] is lower left, [1,1] is upper right.
