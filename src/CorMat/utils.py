@@ -26,7 +26,7 @@ class utils():
 
     def calculatePairwiseDistances(Matrices: Iterable, distance: Callable, Mats_half: Iterable = None, Mats_neghalf: Iterable = None, 
                             computeHalves: bool = False, computeNeghalves: bool = False, 
-                            assumeSymmetric: bool = False, silent: bool = False):
+                            assumeDistIsSymmetric: bool = False, silent: bool = False):
         """Calculates a matrix of pairwise distances between objects in an iterable."""
         # TODO: Allow this to resume progress if interrupted?
         if Mats_half is None and computeHalves == True:
@@ -38,7 +38,7 @@ class utils():
         pairwiseDists = np.zeros((numArrays, numArrays), dtype=float)
         j=0
         for i in range(numArrays):
-            innerLoopUpperIdx = i+1 if assumeSymmetric else numArrays
+            innerLoopUpperIdx = i+1 if assumeDistIsSymmetric else numArrays
             if i%10 == 0 and not silent:
                 print("i =", i, "/", numArrays, "|", "j =", j, "          ", end="\r")
             A = Matrices[i]
@@ -50,7 +50,7 @@ class utils():
                 B = Matrices[j]
                 dist = distance(A, B, Ahalf, A_neghalf)
                 pairwiseDists[i,j] = dist
-                if assumeSymmetric:
+                if assumeDistIsSymmetric:
                     pairwiseDists[j,i] = dist
         return pairwiseDists
 
