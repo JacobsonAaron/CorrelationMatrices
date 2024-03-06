@@ -1,8 +1,6 @@
 __all__ = ["__version__", "distances", "plots", "colors", "utils", "gpu"] # What gets imported when using from _____ import *
 # TODO: Fix the __version__ attribute. Not sure what is wrong with it
 
-import os
-
 # Use if files have classes inside; this imports as Object (from within files)
 # Allows access as CorMat.plots.Plots or as CorMat.Plots
 from .distances import distances
