@@ -24,7 +24,7 @@ class utils():
     def makeEmptyPairwiseDists(numArrays):
         return np.zeros((numArrays, numArrays), dtype=float)
 
-    def calculatePairwiseDistances(Matrices: Iterable, distance: Callable, Mats_half: Iterable = None, Mats_neghalf: Iterable = None, 
+    def calculatePairwiseDistances(Matrices: Iterable, distance: Callable, Mats_half: Iterable = None, Mats_neghalf: Iterable = None, featureDist=None, 
                             computeHalves: bool = False, computeNeghalves: bool = False, 
                             assumeDistIsSymmetric: bool = False, silent: bool = False):
         """Calculates a matrix of pairwise distances between objects in an iterable."""
@@ -48,7 +48,7 @@ class utils():
                 if j%30 == 0 and not silent:
                     print("i =", i, "/", numArrays, "|", "j =", j, "          ", end="\r")
                 B = Matrices[j]
-                dist = distance(A, B, Ahalf, A_neghalf)
+                dist = distance(A, B, Ahalf, A_neghalf, featureDist)
                 pairwiseDists[i,j] = dist
                 if assumeDistIsSymmetric:
                     pairwiseDists[j,i] = dist
@@ -108,3 +108,20 @@ class utils():
             return utils.TStoCM(timeseries)
         else: 
             return utils.TStoCM(utils.clipTS(timeseries[:rowsToKeep, :], sampleRate, leadingClip, durationToKeep))
+        
+    def reinterpolate_TS(TS, desired_len):
+        """Given an input time series TS, constructs a piecewise linear interpolation in time, then samples that interpolation at <desired_len> points.
+            The result is an upsampled or downsampled time series based on linear. Assumes time is first axis of TS (i.e. reinterpolates on first axis)."""
+        if TS.shape[0] == desired_len:
+            return TS
+        else:
+            current_len = TS.shape[0]
+            xnew = np.linspace(0, current_len-1, desired_len)
+            if len(TS.shape) == 1:
+                interp = np.interp(xnew, range(len(TS)), TS)
+                return interp
+            else:
+                toReturn = np.zeros((desired_len, TS.shape[1]))
+                for i in range(TS.shape[1]):
+                    toReturn[:,i] = np.interp(xnew, range(len(TS[:,i])), TS[:,i])
+                return toReturn

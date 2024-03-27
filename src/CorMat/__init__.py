@@ -7,6 +7,7 @@ from .distances import distances
 from .plots import plots
 from .colors import colors
 from .utils import utils
+from .dtw import dtw
 from CorMat import gpu
 
 ## This imports files as filename.Object
