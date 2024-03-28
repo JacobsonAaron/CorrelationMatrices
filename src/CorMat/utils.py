@@ -5,14 +5,8 @@ from typing import Callable, Iterable
 
 class utils():
 
-    def _embed(data, method, dimension = 2):
-        raise NotImplementedError
-
     def _makeDistFolder(dirName):
         # If no pairwise dists folder exists, make one?
-        raise NotImplementedError
-
-    def embedAndPlot(data):
         raise NotImplementedError
 
     def loadPairwiseDistances(filename):
@@ -20,9 +14,6 @@ class utils():
         pairwiseDists = np.loadtxt(filename)
         print("Successfully loaded pairwise distances from file.")
         return pairwiseDists
-
-    def makeEmptyPairwiseDists(numArrays):
-        return np.zeros((numArrays, numArrays), dtype=float)
 
     def calculatePairwiseDistances(Matrices: Iterable, distance: Callable, Mats_half: Iterable = None, Mats_neghalf: Iterable = None, featureDist=None, 
                             computeHalves: bool = False, computeNeghalves: bool = False, 
