@@ -32,9 +32,6 @@ class plots():
         if title is not None:
             ax.set_title(title, fontsize=plots.titleFontsize)
     
-    def addColorbar(ax):
-        raise NotImplementedError
-    
     def make_legend(axs, labels, colormap, pos="best", fontsize=12):
         """Adds a legend given a list of (name, count) pairs.
         Count is the number of items corresponding to each label."""
