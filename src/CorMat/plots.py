@@ -1,5 +1,5 @@
-from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.mplot3d import proj3d
+from mpl_toolkits.mplot3d import Axes3D, proj3d
+from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 from matplotlib import offsetbox
 import matplotlib.patheffects as pe
