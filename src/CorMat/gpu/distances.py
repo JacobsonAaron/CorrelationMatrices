@@ -14,17 +14,6 @@ class distances():
         elif torch.abs(val) <= zero_tol:
             return 0
     
-    # def BuresDistanceFromWikipedia(A, B, Ahalf=None, A_neghalf=None, zero_tol=10**-10):
-    #     """Recommended: Compute A^(1/2) (i.e. Ahalf) and pass that into the method. This will be faster for pairwise distance loops.
-    #     This version of this function mirrors the syntax currently found on Wikipedia."""
-    #     if Ahalf is None:
-    #         Ahalf = la.fractional_matrix_power(A, 1/2)
-    #     val = np.trace(A) + np.trace(B) - 2*np.sqrt(Distances.BuresFidelity(A, B, Ahalf))
-    #     if np.abs(val) > zero_tol:
-    #         return np.sqrt(val).real # NOTE: Switching order of A and B inputs appears to only meaningfully affect imaginary part.
-    #     elif np.abs(val) <= zero_tol:
-    #         return 0
-    
     def RootBuresFidelity(A, B, Ahalf=None, A_neghalf=None):
         if Ahalf is None:
             Ahalf = linalg.fractional_mat_power(A, 1/2)
