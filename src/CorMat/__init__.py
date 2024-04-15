@@ -1,4 +1,4 @@
-__all__ = ["__version__", "distances", "plots", "colors", "utils", "gpu"] # What gets imported when using from _____ import *
+__all__ = ["__version__", "distances", "plots", "colors", "utils", "dtw", "gpu"] # What gets imported when using from _____ import *
 # TODO: Fix the __version__ attribute. Not sure what is wrong with it
 
 # Use if files have classes inside; this imports as Object (from within files)
