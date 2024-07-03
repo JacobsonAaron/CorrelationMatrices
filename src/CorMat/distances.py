@@ -36,7 +36,7 @@ class distances():
         val = min(1,max(0, distances.RootBuresFidelity(A, B, Ahalf, A_neghalf).real ))
         return np.arccos(val).real
     
-    def Euclidean(A, B, Ahalf=None, A_neghalf=None):
+    def Euclidean(A, B, Ahalf=None, A_neghalf=None, featureDist=None):
         return np.linalg.norm(A - B)
 
     def AffineInvariant(A, B, Ahalf=None, A_neghalf=None, featureDist=None):
