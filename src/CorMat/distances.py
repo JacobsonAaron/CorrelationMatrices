@@ -15,7 +15,19 @@ class distances():
         if Ahalf is None:
             Ahalf = la.fractional_matrix_power(A, 1/2)
         # val =  np.trace(A) + np.trace(B) - 2 * np.trace(la.fractional_matrix_power(Ahalf@B@Ahalf, 1/2))
-        val = np.trace(A) + np.trace(B) - 2 * distances.RootBuresFidelity(A,B)
+        val = np.trace(A) + np.trace(B) - 2 * distances.RootBuresFidelity(A,B,Ahalf)
+        if np.abs(val) > zero_tol:
+            return np.sqrt(val).real # NOTE: Switching order of A and B inputs appears to only meaningfully affect imaginary part.
+        elif np.abs(val) <= zero_tol:
+            return 0
+        
+    def BuresDistanceSquared(A, B, Ahalf=None, A_neghalf=None, featureDist=None, zero_tol=10**-10):
+        """Included for compatibility with old code. Old code used the Bures distance squared, but under the name of the
+        Bures distance. In code with this problem, replace the BuresDistance with this function."""
+        if Ahalf is None:
+            Ahalf = la.fractional_matrix_power(A, 1/2)
+        # val =  np.trace(A) + np.trace(B) - 2 * np.trace(la.fractional_matrix_power(Ahalf@B@Ahalf, 1/2))
+        val = np.trace(A) + np.trace(B) - 2 * distances.RootBuresFidelity(A,B,Ahalf)
         if np.abs(val) > zero_tol:
             return np.sqrt(val).real # NOTE: Switching order of A and B inputs appears to only meaningfully affect imaginary part.
         elif np.abs(val) <= zero_tol:
