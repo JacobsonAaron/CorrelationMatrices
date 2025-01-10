@@ -29,6 +29,11 @@ class distances():
         val = np.trace(la.fractional_matrix_power(Ahalf@B@Ahalf, 1/2))
         # val = np.trace(la.fractional_matrix_power(B@A, 1/2)) # Faster than the line above, *tiny* numerical difference
         return val
+    
+    def faster_RootBuresFidelity(A, B, Ahalf, Bhalf):
+        """TODO: Rewrite distances code to use kwargs, so it is a bit easier to make future changes.
+        This is faster but not yet implemented in BuresDistance."""
+        return np.sum(np.linalg.svd(Ahalf@Bhalf, compute_uv=False))
         
     def BuresAngle(A, B, Ahalf=None, A_neghalf=None, featureDist=None):
         # Only applicable to normalized matrices?
