@@ -1,9 +1,4 @@
-# Optional pytorch support
-try:
-    import torch
-except ImportError:
-    torch = None
-
+import torch
 
 class linalg():
     

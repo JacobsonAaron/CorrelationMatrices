@@ -1,4 +1,4 @@
-import os
+# import os
 import torch
 from scipy import linalg as la
 from typing import Callable, Iterable
@@ -9,9 +9,11 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class utils():
 
-    def calculatePairwiseDistances(Matrices: Iterable, distance: Callable, Mats_half: Iterable = None, Mats_neghalf: Iterable = None, featureDist=None, 
-                            computeHalves: bool = False, computeNeghalves: bool = False, 
-                            assumeDistIsSymmetric: bool = False, silent: bool = False):
+    def calculatePairwiseDistances(Matrices: Iterable, distance: Callable, 
+                                    Mats_half: Iterable = None, Mats_neghalf: Iterable = None, 
+                                    DTWfeatureDist=None, 
+                                    computeHalves: bool = False, computeNeghalves: bool = False, 
+                                    assumeDistIsSymmetric: bool = False, silent: bool = False):
         """Calculates a matrix of pairwise distances between objects in an iterable."""
         # TODO: Allow this to resume progress if interrupted?
         if Mats_half is None and computeHalves == True:
@@ -23,7 +25,7 @@ class utils():
         pairwiseDists = torch.zeros((numArrays, numArrays), dtype=float).to(device)
         j=0
         for i in range(numArrays):
-            innerLoopUpperIdx = i+1 if assumeDistIsSymmetric else numArrays
+            innerLoopUpperIdx = i+1 if assumeDistIsSymmetric else numArrays # Loop over full rows or just lower triangle
             if i%10 == 0 and not silent:
                 print("i =", i, "/", numArrays, "|", "j =", j, "          ", end="\r")
             A = Matrices[i]
@@ -33,7 +35,8 @@ class utils():
                 if j%30 == 0 and not silent:
                     print("i =", i, "/", numArrays, "|", "j =", j, "          ", end="\r")
                 B = Matrices[j]
-                dist = distance(A, B, Ahalf, A_neghalf, featureDist)
+                Bhalf = Mats_half[j] if Mats_half is not None else None
+                dist = distance(A, B, Ahalf=Ahalf, Bhalf=Bhalf, A_neghalf=A_neghalf, DTWfeatureDist=DTWfeatureDist)
                 pairwiseDists[i,j] = dist
                 if assumeDistIsSymmetric:
                     pairwiseDists[j,i] = dist
