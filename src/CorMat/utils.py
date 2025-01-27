@@ -1,4 +1,4 @@
-import os
+# import os
 import numpy as np
 from scipy import linalg as la
 from typing import Callable, Iterable
@@ -9,27 +9,29 @@ class utils():
         # If no pairwise dists folder exists, make one?
         raise NotImplementedError
 
-    def loadPairwiseDistances(filename):
-        print("Attempting to load pairwise distances from file.")
-        pairwiseDists = np.loadtxt(filename)
-        print("Successfully loaded pairwise distances from file.")
-        return pairwiseDists
+    # def loadPairwiseDistances(filename):
+    #     print("Attempting to load pairwise distances from file.")
+    #     pairwiseDists = np.loadtxt(filename)
+    #     print("Successfully loaded pairwise distances from file.")
+    #     return pairwiseDists
 
-    def calculatePairwiseDistances(Matrices: Iterable, distance: Callable, Mats_half: Iterable = None, Mats_neghalf: Iterable = None, featureDist=None, 
-                            computeHalves: bool = False, computeNeghalves: bool = False, 
-                            assumeDistIsSymmetric: bool = False, silent: bool = False):
+    def calculatePairwiseDistances(Matrices: Iterable, distance: Callable, 
+                                    Mats_half: Iterable = None, Mats_neghalf: Iterable = None, 
+                                    DTWfeatureDist=None, 
+                                    precomputeHalves: bool = False, precomputeNeghalves: bool = False, 
+                                    assumeDistIsSymmetric: bool = False, silent: bool = False):
         """Calculates a matrix of pairwise distances between objects in an iterable."""
         # TODO: Allow this to resume progress if interrupted?
-        if Mats_half is None and computeHalves == True:
+        if Mats_half is None and precomputeHalves == True:
             Mats_half = [la.fractional_matrix_power(mat, 1/2) for mat in Matrices]
-        if Mats_neghalf is None and computeNeghalves == True:
+        if Mats_neghalf is None and precomputeNeghalves == True:
             Mats_neghalf = [np.linalg.inv(mat) for mat in Mats_half]
         
         numArrays = len(Matrices)
         pairwiseDists = np.zeros((numArrays, numArrays), dtype=float)
         j=0
         for i in range(numArrays):
-            innerLoopUpperIdx = i+1 if assumeDistIsSymmetric else numArrays
+            innerLoopUpperIdx = i+1 if assumeDistIsSymmetric else numArrays # Loop over full rows or just lower triangle
             if i%10 == 0 and not silent:
                 print("i =", i, "/", numArrays, "|", "j =", j, "          ", end="\r")
             A = Matrices[i]
@@ -39,7 +41,8 @@ class utils():
                 if j%30 == 0 and not silent:
                     print("i =", i, "/", numArrays, "|", "j =", j, "          ", end="\r")
                 B = Matrices[j]
-                dist = distance(A, B, Ahalf, A_neghalf, featureDist)
+                Bhalf = Mats_half[j] if Mats_half is not None else None
+                dist = distance(A, B, Ahalf=Ahalf, Bhalf=Bhalf, A_neghalf=A_neghalf, DTWfeatureDist=DTWfeatureDist)
                 pairwiseDists[i,j] = dist
                 if assumeDistIsSymmetric:
                     pairwiseDists[j,i] = dist

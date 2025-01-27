@@ -4,20 +4,20 @@ from numba import jit
 class dtw():
     """Lots of this implementation inspired by: https://www.audiolabs-erlangen.de/resources/MIR/FMP/C3/C3S2_DTWbasic.html#:~:text=This%20leads%20us%20to%20the,%2Dwarping%20path%7D(5)"""
     
-    def compute_cost_matrix(X, Y, featureDist=None):
+    def compute_cost_matrix(X, Y, DTWfeatureDist=None):
         """Compute the cost matrix of two feature sequences
 
         Args:
             X (np.ndarray): Sequence 1
             Y (np.ndarray): Sequence 2
-            featureDist (func(f1, f2)): A distance function that compares two elements of a feature space; 
+            DTWfeatureDist (func(f1, f2)): A distance function that compares two elements of a feature space; 
                                     i.e. compares samples in the time series
 
         Returns:
             C (np.ndarray): Cost matrix
         """
-        if featureDist is None:
-            def featureDist(x,y):
+        if DTWfeatureDist is None:
+            def DTWfeatureDist(x,y):
                 return np.linalg.norm(x-y)
 
         height = int(X.shape[0])
@@ -25,7 +25,7 @@ class dtw():
         C = np.zeros((height, width), dtype=np.float64)
         for i in range(height):
             for j in range(width):
-                C[i,j] = featureDist(X[i], Y[j])
+                C[i,j] = DTWfeatureDist(X[i], Y[j])
         return C
     
     @jit(nopython=True)
@@ -88,17 +88,17 @@ class dtw():
         P.reverse()
         return np.array(P)
     
-    def dtw_distance(TS1, TS2, featureDist=None):
+    def dtw_distance(TS1, TS2, DTWfeatureDist=None):
         """Returns the cost of the optimal warping path given two timeseries TS1, TS2."""
-        C = dtw.compute_cost_matrix(TS1, TS2, featureDist=featureDist)
+        C = dtw.compute_cost_matrix(TS1, TS2, DTWfeatureDist=DTWfeatureDist)
         D = dtw.compute_accumulated_cost_matrix(C)
         return D[-1,-1]
     
-    def simple_optimal_warping_path(TS1, TS2, featureDist=None):
+    def simple_optimal_warping_path(TS1, TS2, DTWfeatureDist=None):
         """A wrapper for the three steps of finding the optimal warping path.
         Simply composes the operations of constructing cost matrix, the accumulated cost matrix,
         and backtracking through the accumulated cost matrix."""
-        C = dtw.compute_cost_matrix(TS1, TS2, featureDist=featureDist)
+        C = dtw.compute_cost_matrix(TS1, TS2, featureDist=DTWfeatureDist)
         D = dtw.compute_accumulated_cost_matrix(C)
         P = dtw.compute_optimal_warping_path(D)
         return P
