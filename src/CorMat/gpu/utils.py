@@ -11,14 +11,14 @@ class utils():
 
     def calculatePairwiseDistances(Matrices: Iterable, distance: Callable, 
                                     Mats_half: Iterable = None, Mats_neghalf: Iterable = None, 
-                                    DTWfeatureDist=None, 
-                                    computeHalves: bool = False, computeNeghalves: bool = False, 
+                                    DTWfeatureDist: bool = None, fastMode: bool = False,
+                                    precomputeHalves: bool = False, precomputeNeghalves: bool = False, 
                                     assumeDistIsSymmetric: bool = False, silent: bool = False):
         """Calculates a matrix of pairwise distances between objects in an iterable."""
         # TODO: Allow this to resume progress if interrupted?
-        if Mats_half is None and computeHalves == True:
+        if Mats_half is None and precomputeHalves == True:
             raise ValueError('Mats_half cannot be None if computeNeghalves is True. Alternatively, use CPU version of this function.')
-        if Mats_neghalf is None and computeNeghalves == True:
+        if Mats_neghalf is None and precomputeNeghalves == True:
             raise ValueError('Mats_neghalf cannot be None if computeNeghalves is True. Alternatively, use CPU version of this function.')
         
         numArrays = len(Matrices)
@@ -36,7 +36,7 @@ class utils():
                     print("i =", i, "/", numArrays, "|", "j =", j, "          ", end="\r")
                 B = Matrices[j]
                 Bhalf = Mats_half[j] if Mats_half is not None else None
-                dist = distance(A, B, Ahalf=Ahalf, Bhalf=Bhalf, A_neghalf=A_neghalf, DTWfeatureDist=DTWfeatureDist)
+                dist = distance(A, B, Ahalf=Ahalf, Bhalf=Bhalf, A_neghalf=A_neghalf, DTWfeatureDist=DTWfeatureDist, fastMode=fastMode)
                 pairwiseDists[i,j] = dist
                 if assumeDistIsSymmetric:
                     pairwiseDists[j,i] = dist

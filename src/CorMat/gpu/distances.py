@@ -7,26 +7,38 @@ class distances():
         """Recommended: Compute A^(1/2) (i.e. Ahalf) and pass that into the method. This will be faster for pairwise distance loops.
         For more, see Rajendra Bhatia, Tanvi Jain, Yongdo Lim.
         Paper Title: On the Bures-Wasserstein distance between positive definite matrices"""
-        # val = torch.trace(A) + torch.trace(B) - 2 * torch.trace(linalg.fractional_mat_power(Ahalf@B@Ahalf, 1/2))
         Ahalf = kwargs['Ahalf'] if 'Ahalf' in kwargs.keys() else linalg.fractional_matrix_power(A, 1/2)
         Bhalf = kwargs['Bhalf'] if 'Bhalf' in kwargs.keys() else linalg.fractional_matrix_power(B, 1/2)
-        val = torch.trace(A) + torch.trace(B) - 2 * distances.faster_RootBuresFidelity(A, B, Ahalf=Ahalf, Bhalf=Bhalf)
-        if torch.abs(val) > zero_tol:
-            return torch.sqrt(val.to(torch.complex128)).real # NOTE: Switching order of A and B inputs appears to only meaningfully affect imaginary part.
-        elif torch.abs(val) <= zero_tol:
+        fastMode = kwargs['fastMode'] if 'fastMode' in kwargs.keys() else False
+        val = torch.trace(A) + torch.trace(B) - 2 * distances.faster_RootBuresFidelity(A, B, Ahalf=Ahalf, Bhalf=Bhalf, fastMode=fastMode)
+        if val.real >= 0:
+            return torch.sqrt(val.real) # NOTE: Switching order of A and B inputs appears to only meaningfully affect imaginary part.
+        elif torch.abs(val) < zero_tol:
             return 0
+        elif torch.abs(val) < 10**6*zero_tol and fastMode:
+            return 0
+        else:
+            raise ValueError('Invalid value encountered in Bures distance.')
     
     def faster_RootBuresFidelity(A, B, *args, **kwargs):
         Ahalf = kwargs['Ahalf'] if 'Ahalf' in kwargs.keys() else linalg.fractional_matrix_power(A, 1/2)
         Bhalf = kwargs['Bhalf'] if 'Bhalf' in kwargs.keys() else linalg.fractional_matrix_power(B, 1/2)
-        val = torch.sum(torch.linalg.svdvals(Ahalf@Bhalf))
+        fastMode = kwargs['fastMode'] if 'fastMode' in kwargs.keys() else False
+        mat = Ahalf@Bhalf
+        if not fastMode:
+            val = torch.sum(torch.linalg.svdvals(Ahalf@Bhalf))
+        else:
+            val = torch.sum(torch.abs(torch.linalg.eigvalsh(mat@mat.T))**(1/2)) # Even faster, but has some precision problems
+            val += torch.sum(torch.abs(torch.linalg.eigvalsh(mat.T@mat))**(1/2)) # Average with other direction to hope for better accuracy
+            val = val / 2
         return val
         
     def BuresAngle(A, B, *args, **kwargs):
         """Only applicable to PSD matrices A, B with trace = 1, so that RootBuresFidelity is bounded in [-1,1]"""
         Ahalf = kwargs['Ahalf'] if 'Ahalf' in kwargs.keys() else linalg.fractional_matrix_power(A, 1/2)
         Bhalf = kwargs['Bhalf'] if 'Bhalf' in kwargs.keys() else linalg.fractional_matrix_power(B, 1/2)
-        val = distances.faster_RootBuresFidelity(A, B, Ahalf=Ahalf, Bhalf=Bhalf)
+        fastMode = kwargs['fastMode'] if 'fastMode' in kwargs.keys() else False
+        val = distances.faster_RootBuresFidelity(A, B, Ahalf=Ahalf, Bhalf=Bhalf, fastMode=fastMode)
         return torch.arccos(val).real
 
     def AffineInvariant(A, B, *args, **kwargs):

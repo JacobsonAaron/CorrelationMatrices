@@ -14,23 +14,37 @@ class distances():
         Paper Title: On the Bures-Wasserstein distance between positive definite matrices"""
         Ahalf = kwargs['Ahalf'] if 'Ahalf' in kwargs.keys() else la.fractional_matrix_power(A, 1/2)
         Bhalf = kwargs['Bhalf'] if 'Bhalf' in kwargs.keys() else la.fractional_matrix_power(B, 1/2)
-        val = np.trace(A) + np.trace(B) - 2 * distances.faster_RootBuresFidelity(A, B, Ahalf=Ahalf, Bhalf=Bhalf)
-        if np.abs(val) > zero_tol:
-            return np.sqrt(val).real # NOTE: Switching order of A and B inputs appears to only meaningfully affect imaginary part.
-        elif np.abs(val) <= zero_tol:
+        fastMode = kwargs['fastMode'] if 'fastMode' in kwargs.keys() else False
+        val = np.trace(A) + np.trace(B) - 2 * distances.faster_RootBuresFidelity(A, B, Ahalf=Ahalf, Bhalf=Bhalf, fastMode=fastMode)
+        if val.real >= 0:
+            return np.sqrt(val.real) # NOTE: Switching order of A and B inputs appears to only meaningfully affect imaginary part.
+        elif np.abs(val) < zero_tol:
             return 0
+        elif np.abs(val) < 10**6*zero_tol and fastMode:
+            return 0
+        else:
+            raise ValueError('Invalid value encountered in Bures distance.')
     
     def faster_RootBuresFidelity(A, B, *args, **kwargs):
         """Faster implementation of Bures Fidelity"""
         Ahalf = kwargs['Ahalf'] if 'Ahalf' in kwargs.keys() else la.fractional_matrix_power(A, 1/2)
         Bhalf = kwargs['Bhalf'] if 'Bhalf' in kwargs.keys() else la.fractional_matrix_power(B, 1/2)
-        return np.sum(np.linalg.svd(Ahalf@Bhalf, compute_uv=False))
+        fastMode = kwargs['fastMode'] if 'fastMode' in kwargs.keys() else False
+        mat = Ahalf@Bhalf
+        if not fastMode:
+            val = np.sum(np.linalg.svd(mat, compute_uv=False))
+        else:
+            val = np.sum(np.abs(np.linalg.eigvalsh(mat@mat.T))**(1/2)) # Faster method for GPU. Not actually any better on CPU.
+            val += np.sum(np.abs(np.linalg.eigvalsh(mat.T@mat))**(1/2)) # Average with other direction to hope for better accuracy
+            val = val / 2
+        return val
 
     def BuresAngle(A, B, *args, **kwargs):
         """Only applicable to PSD matrices A, B with trace = 1, so that RootBuresFidelity is bounded in [-1,1]"""
         Ahalf = kwargs['Ahalf'] if 'Ahalf' in kwargs.keys() else la.fractional_matrix_power(A, 1/2)
         Bhalf = kwargs['Bhalf'] if 'Bhalf' in kwargs.keys() else la.fractional_matrix_power(B, 1/2)
-        val = distances.faster_RootBuresFidelity(A, B, Ahalf=Ahalf, Bhalf=Bhalf)
+        fastMode = kwargs['fastMode'] if 'fastMode' in kwargs.keys() else False
+        val = distances.faster_RootBuresFidelity(A, B, Ahalf=Ahalf, Bhalf=Bhalf, fastMode=fastMode)
         return np.arccos(val).real
     
     def Euclidean(A, B, *args, **kwargs):
